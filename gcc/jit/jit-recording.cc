@@ -4102,7 +4102,8 @@ recording::function::function (context *ctxt,
   m_builtin_id (builtin_id),
   m_locals (),
   m_blocks (),
-  m_fn_ptr_type (NULL)
+  m_fn_ptr_type (NULL),
+  m_declare_simd(0)
 {
   for (int i = 0; i< num_params; i++)
     {
@@ -4161,7 +4162,8 @@ recording::function::replay_into (replayer *r)
 				     m_name->c_str (),
 				     &params,
 				     m_is_variadic,
-				     m_builtin_id));
+				     m_builtin_id,
+             m_declare_simd));
 }
 
 /* Create a recording::local instance and add it to
@@ -4438,6 +4440,11 @@ recording::function::write_reproducer (reproducer &r)
 	       id,
 	       r.get_identifier (get_context ()),
 	       m_name->get_debug_string ());
+      if (m_declare_simd)
+        {
+          r.write (" gcc_jit_function_set_bool_declare_simd"
+                  " (%s, /* int declare_simd */ 1);\n", id);
+        }
       return;
     }
   const char *params_id = r.make_tmp_identifier ("params_for", this);
@@ -4467,6 +4474,11 @@ recording::function::write_reproducer (reproducer &r)
 	   m_params.length (),
 	   params_id,
 	   m_is_variadic);
+  if (m_declare_simd)
+    {
+      r.write (" gcc_jit_function_set_bool_declare_simd"
+               " (%s, /* int declare_simd */ 1);\n", id);
+    }
 }
 
 

@@ -1342,6 +1342,8 @@ public:
 
   rvalue *get_address (location *loc);
 
+  void declare_simd (int declare_simd) { m_declare_simd = declare_simd; };
+
 private:
   string * make_debug_string () final override;
   void write_reproducer (reproducer &r) final override;
@@ -1357,6 +1359,7 @@ private:
   auto_vec<local *> m_locals;
   auto_vec<block *> m_blocks;
   type *m_fn_ptr_type;
+  int m_declare_simd;
 };
 
 class block : public memento

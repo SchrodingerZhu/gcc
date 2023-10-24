@@ -1999,6 +1999,12 @@ gcc_jit_vector_type_get_element_type (gcc_jit_vector_type *vector_type);
 extern gcc_jit_type *
 gcc_jit_type_unqualified (gcc_jit_type *type);
 
+/* Given a function, enable or disable the generation or import of its 
+ * SIMD clone.   */
+extern void
+gcc_jit_function_set_bool_declare_simd (gcc_jit_function *func, 
+   int declare_simd);
+
 #ifdef __cplusplus
 }
 #endif /* __cplusplus */

@@ -4292,3 +4292,18 @@ gcc_jit_context_add_top_level_asm (gcc_jit_context *ctxt,
   RETURN_IF_FAIL (asm_stmts, ctxt, NULL, "NULL asm_stmts");
   ctxt->add_top_level_asm (loc, asm_stmts);
 }
+
+/* Public entrypoint.  See description in libgccjit.h.
+
+   After error-checking, the real work is done by the
+   gcc::jit::recording::function::declare_simd, in
+   jit-recording.cc.  */
+
+void
+gcc_jit_function_set_bool_declare_simd (gcc_jit_function *func, int declare_simd)
+{
+  RETURN_IF_FAIL (func, NULL, NULL, "NULL function");
+  gcc::jit::recording::context *ctxt = func->m_ctxt;
+  JIT_LOG_FUNC (ctxt->get_logger ());
+  func->declare_simd(declare_simd);
+}

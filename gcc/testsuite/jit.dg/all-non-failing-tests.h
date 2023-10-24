@@ -316,6 +316,9 @@
 /* test-restrict.c: This can't be in the testcases array as it needs
    the `-O3` flag.  */
 
+/* test-declare-simd.c: This can't be in the testcases array as it needs
+   the `-O3` and `-ffast-math` flags.  */
+
 /* test-register-variable.c: This can't be in the testcases array as it
    is target-specific.  */
 

@@ -509,7 +509,8 @@ new_function (location *loc,
 	      const char *name,
 	      const auto_vec<param *> *params,
 	      int is_variadic,
-	      enum built_in_function builtin_id)
+	      enum built_in_function builtin_id,
+        int declare_simd)
 {
   int i;
   param *param;
@@ -594,7 +595,16 @@ new_function (location *loc,
 		   DECL_ATTRIBUTES (fndecl));
     }
 
-  function *func = new function (this, fndecl, kind);
+  if (declare_simd)
+    {
+      /* Add attribute "omp declare simd": */
+      DECL_ATTRIBUTES (fndecl) =
+	tree_cons (get_identifier ("omp declare simd"),
+		   NULL,
+		   DECL_ATTRIBUTES (fndecl));
+    }
+
+  function *func = new function (this, fndecl, kind, declare_simd);
   m_functions.safe_push (func);
   return func;
 }
@@ -1753,12 +1763,14 @@ operator new (size_t sz)
 playback::function::
 function (context *ctxt,
 	  tree fndecl,
-	  enum gcc_jit_function_kind kind)
+	  enum gcc_jit_function_kind kind,
+    int declare_simd)
 : m_ctxt(ctxt),
   m_inner_fndecl (fndecl),
   m_inner_bind_expr (NULL),
   m_kind (kind),
-  m_blocks ()
+  m_blocks (),
+  m_declare_simd(declare_simd)
 {
   if (m_kind != GCC_JIT_FUNCTION_IMPORTED)
     {

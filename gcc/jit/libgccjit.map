@@ -276,3 +276,8 @@ LIBGCCJIT_ABI_25 {
   global:
     gcc_jit_type_get_restrict;
 } LIBGCCJIT_ABI_24;
+
+LIBGCCJIT_ABI_26 {
+  global:
+    gcc_jit_function_set_bool_declare_simd;
+} LIBGCCJIT_ABI_25;

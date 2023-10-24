@@ -104,7 +104,9 @@ public:
 		const char *name,
 		const auto_vec<param *> *params,
 		int is_variadic,
-		enum built_in_function builtin_id);
+		enum built_in_function builtin_id,
+    int declare_simd
+  );
 
   lvalue *
   new_global (location *loc,
@@ -486,7 +488,7 @@ class bitfield : public field {};
 class function : public wrapper
 {
 public:
-  function(context *ctxt, tree fndecl, enum gcc_jit_function_kind kind);
+  function(context *ctxt, tree fndecl, enum gcc_jit_function_kind kind, int declare_simd);
 
   void gt_ggc_mx ();
   void finalizer () final override;
@@ -532,6 +534,7 @@ private:
   tree m_stmt_list;
   tree_stmt_iterator m_stmt_iter;
   vec<block *> m_blocks;
+  int m_declare_simd;
 };
 
 struct case_
