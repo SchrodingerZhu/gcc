@@ -125,6 +125,9 @@ public:
   get_attrs_tree (enum built_in_function builtin_id);
 
   tree
+  get_attrs_tree_for_stub (enum built_in_function builtin_id);
+
+  tree
   get_attrs_tree (enum built_in_attribute attr);
 
   void
@@ -145,6 +148,10 @@ private:
 
   recording::type *
   make_type (enum jit_builtin_type type_id);
+
+  recording::type *get_type_for_stub (enum built_in_function type_id);
+
+  recording::type *make_type_for_stub (enum built_in_function type_id);
 
   recording::type*
   make_primitive_type (enum jit_builtin_type type_id);

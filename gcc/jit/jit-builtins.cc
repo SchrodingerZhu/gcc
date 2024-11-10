@@ -23,6 +23,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "target.h"
 #include "jit-playback.h"
 #include "stringpool.h"
+#include "tree-core.h"
 
 #include "jit-builtins.h"
 
@@ -185,7 +186,8 @@ builtins_manager::make_builtin_function (enum built_in_function builtin_id)
 {
   const struct builtin_data& bd = builtin_data[builtin_id];
   enum jit_builtin_type type_id = bd.type;
-  recording::type *t = get_type (type_id);
+  recording::type *t = type_id == BT_LAST ? get_type_for_stub (builtin_id)
+    : get_type (type_id);
   if (!t)
     return NULL;
   recording::function_type *func_type = t->as_a_function_type ();
@@ -331,6 +333,52 @@ builtins_manager::get_type (enum jit_builtin_type type_id)
   if (!m_types[type_id])
     m_types[type_id] = make_type (type_id);
   return m_types[type_id];
+}
+
+/* Create the recording::type for special builtins whose types are not defined
+   in builtin-types.def.  */
+
+recording::type *
+builtins_manager::make_type_for_stub (enum built_in_function builtin_id)
+{
+  switch (builtin_id)
+    {
+    default:
+      return reinterpret_cast<recording::type *> (-1);
+    case BUILT_IN_ALLOCA_WITH_ALIGN:
+      {
+        recording::type *p = m_ctxt->get_type (GCC_JIT_TYPE_SIZE_T);
+        recording::type *r = m_ctxt->get_type (GCC_JIT_TYPE_VOID_PTR);
+        recording::type *params[2] = { p, p };
+        return m_ctxt->new_function_type (r, 2, params, false);
+      }
+    case BUILT_IN_STACK_SAVE:
+      {
+        recording::type *r = m_ctxt->get_type (GCC_JIT_TYPE_VOID_PTR);
+        return m_ctxt->new_function_type (r, 0, nullptr, false);
+      }
+    case BUILT_IN_STACK_RESTORE:
+      {
+        recording::type *p = m_ctxt->get_type (GCC_JIT_TYPE_VOID_PTR);
+        recording::type *r = m_ctxt->get_type (GCC_JIT_TYPE_VOID);
+        recording::type *params[1] = { p };
+        return m_ctxt->new_function_type (r, 1, params, false);
+      }
+    }
+}
+
+/* Get the recording::type for a given type of builtin function,
+   by ID, creating it if it doesn't already exist.  */
+
+recording::type *
+builtins_manager::get_type_for_stub (enum built_in_function type_id)
+{
+  if (m_types[type_id] == nullptr)
+    m_types[type_id] = make_type_for_stub (type_id);
+  recording::type *t = m_types[type_id];
+  if (reinterpret_cast<intptr_t> (t) == -1)
+    return nullptr;
+  return t;
 }
 
 /* Create the recording::type for a given type of builtin function.  */
@@ -661,15 +709,30 @@ tree
 builtins_manager::get_attrs_tree (enum built_in_function builtin_id)
 {
   enum built_in_attribute attr = builtin_data[builtin_id].attr;
+  if (attr == ATTR_LAST)
+    return get_attrs_tree_for_stub (builtin_id);
   return get_attrs_tree (attr);
 }
 
-/* As above, but for an enum built_in_attribute.  */
+/* Get attributes for builtin stubs.  */
+
+tree
+builtins_manager::get_attrs_tree_for_stub (enum built_in_function builtin_id)
+{
+  switch (builtin_id)
+    {
+    default:
+      return NULL_TREE;
+    case BUILT_IN_ALLOCA_WITH_ALIGN:
+      return get_attrs_tree (BUILT_IN_ALLOCA);
+    }
+}
+
+/* As get_attrs_tree, but for an enum built_in_attribute.  */
 
 tree
 builtins_manager::get_attrs_tree (enum built_in_attribute attr)
 {
-  gcc_assert (attr < ATTR_LAST);
   if (!m_attributes [attr])
     m_attributes [attr] = make_attrs_tree (attr);
   return m_attributes [attr];
