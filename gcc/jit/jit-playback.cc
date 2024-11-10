@@ -2118,6 +2118,7 @@ postprocess ()
       /* Seem to need this in gimple-low.cc: */
       gcc_assert (m_inner_block);
       DECL_INITIAL (m_inner_fndecl) = m_inner_block;
+      BLOCK_SUPERCONTEXT (m_inner_block) = m_inner_fndecl;
 
       /* how to add to function? the following appears to be how to
 	 set the body of a m_inner_fndecl: */
